@@ -12,20 +12,39 @@ import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.hc.core5.net.URIBuilder;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 public class Main {
     public static void main(String[] args) {
+        String fromCur = "USD";
+        String toCur = "LKR";
         double amountUsd = 1.0;
-        String result = post("https://www.x-rates.com/calculator/?from=USD&to=LKR", amountUsd);
-        System.out.println(result);
+
+        String result = get("https://www.x-rates.com/calculator/", fromCur, toCur, amountUsd);
+
+        // Parse the HTML string
+        Document doc = Jsoup.parse(result);
+
+        // Select the div with class "ccOutputRslt"
+        Element div = doc.selectFirst("div.ccOutputBx");
+
+        // Extract the text content from the div
+        if (div != null) {
+            System.out.println(div.text());
+        } else {
+            System.out.println("Value not found!");
+        }
     }
 
-    public static String post(String url, double amount) {
+    public static String get(String url, String fromCur, String toCur, double amount) {
         String result = null;
 
         List<NameValuePair> params = new ArrayList<>();
         // GET Query Parameters
+        params.add(new BasicNameValuePair("from", fromCur));
+        params.add(new BasicNameValuePair("to", toCur));
         params.add(new BasicNameValuePair("amount", String.valueOf(amount)));
 
         // Add to the request URL
