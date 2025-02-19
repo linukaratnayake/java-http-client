@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -21,13 +21,18 @@
             <artifactId>httpclient5</artifactId>
             <version>5.4.1</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5-fluent -->
+        <!-- Apache HttpCore 5.x (required for HttpEntity and other utilities) -->
         <dependency>
-            <groupId>org.apache.httpcomponents.client5</groupId>
-            <artifactId>httpclient5-fluent</artifactId>
-            <version>5.4.1</version>
+            <groupId>org.apache.httpcomponents.core5</groupId>
+            <artifactId>httpcore5</artifactId>
+            <version>5.3.3</version>
         </dependency>
+        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5-fluent &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.apache.httpcomponents.client5</groupId>-->
+        <!--            <artifactId>httpclient5-fluent</artifactId>-->
+        <!--            <version>5.4.1</version>-->
+        <!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
         <dependency>

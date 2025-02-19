@@ -1,39 +1,47 @@
 package com.linukaratnayake.httpclient;
 
-import org.apache.hc.client5.http.fluent.Content;
-import org.apache.hc.client5.http.fluent.Request;
-import org.apache.hc.client5.http.fluent.Response;
-import org.apache.hc.core5.http.NameValuePair;
-import org.apache.hc.core5.net.URIBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.core5.http.HttpEntity;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
 
 public class Client {
-    private static final Logger logger = LoggerFactory.getLogger(Client.class);
+//    private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
-    public static Content get(String url, List<NameValuePair> params) {
-        Content content = null;
+    private final HttpClientConnectionManager connectionManager;
+    private final CloseableHttpClient httpClient;
 
-        // Add to the request URL
-        try {
-            URI uri = new URIBuilder(new URI(url))
-                    .addParameters(params)
-                    .build();
-            try {
-                Response response = Request.get(uri.toString()).execute();
-                content = response.returnContent();
-            } catch (IOException e) {
-                logger.error("An error occurred while processing the request", e);
-            }
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+    public Client() {
+        this.connectionManager = new BasicHttpClientConnectionManager();
+        this.httpClient = HttpClients.custom()
+                .setConnectionManager(connectionManager)
+                .setConnectionManagerShared(false)  // Default to false
+                .build();
+    }
+
+    public Client(HttpClientConnectionManager connectionManager, boolean isShared) {
+        this.connectionManager = connectionManager;
+        this.httpClient = HttpClients.custom()
+                .setConnectionManager(connectionManager)
+                .setConnectionManagerShared(isShared)
+                .build();
+    }
+
+    public HttpEntity get(String url) throws IOException {
+        HttpGet getUrl = new HttpGet(url);
+
+        try (CloseableHttpResponse response = httpClient.execute(getUrl)) {
+            return response.getEntity();
         }
+    }
 
-        return content;
+    public void close() throws IOException {
+        this.connectionManager.close();
+        this.httpClient.close();
     }
 }
