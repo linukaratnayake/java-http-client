@@ -30,7 +30,7 @@ public class PoolingConnectionClient extends Client {
     }
 
     private static PoolingHttpClientConnectionManager getPoolingHttpClientConnectionManager(boolean isNew) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
-        if (isNew || poolingHttpClientConnectionManager == null) {
+        if (isNew || poolingHttpClientConnectionManager == null || poolingHttpClientConnectionManager.isClosed()) {
             // Create a custom SSL context to trust all certificates (including self-signed)
             SSLContextBuilder sslContextBuilder = SSLContexts.custom()
                     .loadTrustMaterial((chain, authType) -> true);  // Trust all certificates

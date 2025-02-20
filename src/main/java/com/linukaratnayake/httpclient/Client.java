@@ -46,7 +46,10 @@ public class Client {
     }
 
     public void close() throws IOException {
-        this.connectionManager.close();
         this.httpClient.close();
+    }
+
+    public void closeConnectionManager() throws IOException {
+        this.connectionManager.close();
     }
 }
