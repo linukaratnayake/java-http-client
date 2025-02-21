@@ -18,42 +18,48 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
-public class PoolingConnectionClient extends Client {
+public class PoolingConnectionHttpClient extends HttpClient {
     private static PoolingHttpClientConnectionManager poolingHttpClientConnectionManager;
 
-    public PoolingConnectionClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public PoolingConnectionHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         super(getPoolingHttpClientConnectionManager(false), false);   // isShared = false is the default
     }
 
-    public PoolingConnectionClient(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public PoolingConnectionHttpClient(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         super(getPoolingHttpClientConnectionManager(isNew), isShared);
     }
 
     private static PoolingHttpClientConnectionManager getPoolingHttpClientConnectionManager(boolean isNew) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
         if (isNew || poolingHttpClientConnectionManager == null || poolingHttpClientConnectionManager.isClosed()) {
-            // Create a custom SSL context to trust all certificates (including self-signed)
-            SSLContextBuilder sslContextBuilder = SSLContexts.custom()
-                    .loadTrustMaterial((chain, authType) -> true);  // Trust all certificates
+            // To make thread safe
+            synchronized (PoolingConnectionHttpClient.class) {
+                // Check again as multiple threads can reach above step
+                if (isNew || poolingHttpClientConnectionManager == null || poolingHttpClientConnectionManager.isClosed()) {
+                    // Create a custom SSL context to trust all certificates (including self-signed)
+                    SSLContextBuilder sslContextBuilder = SSLContexts.custom()
+                            .loadTrustMaterial((chain, authType) -> true);  // Trust all certificates
 
-            // Create the PoolingHttpClientConnectionManager with SSL support
-            // Use the custom SSL context
-            poolingHttpClientConnectionManager = PoolingHttpClientConnectionManagerBuilder.create()
-                    .setTlsSocketStrategy((TlsSocketStrategy) ClientTlsStrategyBuilder.create()
-                            .setSslContext(sslContextBuilder.build())  // Use the custom SSL context
-                            .setTlsVersions(TLS.V_1_3)
-                            .setSslContext(sslContextBuilder.build())
-                            .build())
-                    .setDefaultSocketConfig(SocketConfig.custom()
-                            .setSoTimeout(Timeout.ofMinutes(1))
-                            .build())
-                    .setPoolConcurrencyPolicy(PoolConcurrencyPolicy.STRICT)
-                    .setConnPoolPolicy(PoolReusePolicy.LIFO)
-                    .setDefaultConnectionConfig(ConnectionConfig.custom()
-                            .setSocketTimeout(Timeout.ofMinutes(1))
-                            .setConnectTimeout(Timeout.ofMinutes(1))
-                            .setTimeToLive(TimeValue.ofMinutes(10))
-                            .build())
-                    .build();
+                    // Create the PoolingHttpClientConnectionManager with SSL support
+                    // Use the custom SSL context
+                    poolingHttpClientConnectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+                            .setTlsSocketStrategy((TlsSocketStrategy) ClientTlsStrategyBuilder.create()
+                                    .setSslContext(sslContextBuilder.build())  // Use the custom SSL context
+                                    .setTlsVersions(TLS.V_1_3)
+                                    .setSslContext(sslContextBuilder.build())
+                                    .build())
+                            .setDefaultSocketConfig(SocketConfig.custom()
+                                    .setSoTimeout(Timeout.ofMinutes(1))
+                                    .build())
+                            .setPoolConcurrencyPolicy(PoolConcurrencyPolicy.STRICT)
+                            .setConnPoolPolicy(PoolReusePolicy.LIFO)
+                            .setDefaultConnectionConfig(ConnectionConfig.custom()
+                                    .setSocketTimeout(Timeout.ofMinutes(1))
+                                    .setConnectTimeout(Timeout.ofMinutes(1))
+                                    .setTimeToLive(TimeValue.ofMinutes(10))
+                                    .build())
+                            .build();
+                }
+            }
         }
 
         return poolingHttpClientConnectionManager;

@@ -15,34 +15,39 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
-public class BasicConnectionClient extends Client {
+public class BasicConnectionHttpClient extends HttpClient {
     private static BasicHttpClientConnectionManager basicHttpConnectionManager = null;
 
-    public BasicConnectionClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public BasicConnectionHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         super(getBasicHttpClientConnectionManager(false), false);   // isShared = false is the default
     }
 
-    public BasicConnectionClient(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public BasicConnectionHttpClient(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         super(getBasicHttpClientConnectionManager(isNew), isShared);
     }
 
     private static BasicHttpClientConnectionManager getBasicHttpClientConnectionManager(boolean isNew) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
-        if (isNew || basicHttpConnectionManager == null) {
-            final TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
-            final SSLContext sslContext = SSLContexts.custom()
-                    .loadTrustMaterial(null, acceptingTrustStrategy)
-                    .build();
-            final SSLConnectionSocketFactory sslsf =
-                    new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
-            final Registry<ConnectionSocketFactory> socketFactoryRegistry =
-                    RegistryBuilder.<ConnectionSocketFactory>create()
-                            .register("https", sslsf)
-                            .register("http", new PlainConnectionSocketFactory())
+        if (isNew || basicHttpConnectionManager == null || basicHttpConnectionManager.isClosed()) {
+            // To make thread safe
+            synchronized (BasicConnectionHttpClient.class) {
+                // Check again as multiple threads can reach above step
+                if (isNew || basicHttpConnectionManager == null || basicHttpConnectionManager.isClosed()) {
+                    final TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
+                    final SSLContext sslContext = SSLContexts.custom()
+                            .loadTrustMaterial(null, acceptingTrustStrategy)
                             .build();
+                    final SSLConnectionSocketFactory sslsf =
+                            new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+                    final Registry<ConnectionSocketFactory> socketFactoryRegistry =
+                            RegistryBuilder.<ConnectionSocketFactory>create()
+                                    .register("https", sslsf)
+                                    .register("http", new PlainConnectionSocketFactory())
+                                    .build();
 
-            basicHttpConnectionManager = new BasicHttpClientConnectionManager(socketFactoryRegistry);
+                    basicHttpConnectionManager = new BasicHttpClientConnectionManager(socketFactoryRegistry);
+                }
+            }
         }
-
         return basicHttpConnectionManager;
     }
 }

@@ -10,13 +10,13 @@ import org.apache.hc.core5.http.HttpEntity;
 import java.io.IOException;
 import java.io.InputStream;
 
-public abstract class Client {
+public abstract class HttpClient {
 //    private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
     private final HttpClientConnectionManager connectionManager;
     private final CloseableHttpClient httpClient;
 
-    public Client() {
+    public HttpClient() {
         this.connectionManager = new BasicHttpClientConnectionManager();
         this.httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
@@ -24,7 +24,7 @@ public abstract class Client {
                 .build();
     }
 
-    public Client(HttpClientConnectionManager connectionManager, boolean isShared) {
+    public HttpClient(HttpClientConnectionManager connectionManager, boolean isShared) {
         this.connectionManager = connectionManager;
         this.httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
