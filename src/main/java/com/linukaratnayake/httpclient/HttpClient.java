@@ -10,7 +10,7 @@ import org.apache.hc.core5.http.HttpEntity;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class Client {
+public abstract class Client {
 //    private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
     private final HttpClientConnectionManager connectionManager;
