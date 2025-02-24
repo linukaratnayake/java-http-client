@@ -18,11 +18,11 @@ import java.security.NoSuchAlgorithmException;
 public class BasicConnectionHttpClient extends HttpClient {
     private static BasicHttpClientConnectionManager basicHttpConnectionManager = null;
 
-    public BasicConnectionHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    protected BasicConnectionHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         super(getBasicHttpClientConnectionManager(false), false);   // isShared = false is the default
     }
 
-    public BasicConnectionHttpClient(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    protected BasicConnectionHttpClient(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         super(getBasicHttpClientConnectionManager(isNew), isShared);
     }
 

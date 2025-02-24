@@ -16,7 +16,7 @@ public abstract class HttpClient {
     private final HttpClientConnectionManager connectionManager;
     private final CloseableHttpClient httpClient;
 
-    public HttpClient() {
+    protected HttpClient() {
         this.connectionManager = new BasicHttpClientConnectionManager();
         this.httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
@@ -24,7 +24,7 @@ public abstract class HttpClient {
                 .build();
     }
 
-    public HttpClient(HttpClientConnectionManager connectionManager, boolean isShared) {
+    protected HttpClient(HttpClientConnectionManager connectionManager, boolean isShared) {
         this.connectionManager = connectionManager;
         this.httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)

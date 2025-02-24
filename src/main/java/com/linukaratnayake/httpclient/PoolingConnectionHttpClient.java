@@ -21,11 +21,11 @@ import java.security.NoSuchAlgorithmException;
 public class PoolingConnectionHttpClient extends HttpClient {
     private static PoolingHttpClientConnectionManager poolingHttpClientConnectionManager;
 
-    public PoolingConnectionHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    protected PoolingConnectionHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         super(getPoolingHttpClientConnectionManager(false), false);   // isShared = false is the default
     }
 
-    public PoolingConnectionHttpClient(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    protected PoolingConnectionHttpClient(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         super(getPoolingHttpClientConnectionManager(isNew), isShared);
     }
 
