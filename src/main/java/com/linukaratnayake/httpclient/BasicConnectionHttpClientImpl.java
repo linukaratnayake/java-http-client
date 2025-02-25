@@ -15,21 +15,21 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
-public class BasicConnectionHttpClient extends HttpClient {
+public class BasicConnectionHttpClientImpl extends HttpClientImpl {
     private static BasicHttpClientConnectionManager basicHttpConnectionManager = null;
 
-    protected BasicConnectionHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    protected BasicConnectionHttpClientImpl() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         super(getBasicHttpClientConnectionManager(false), false);   // isShared = false is the default
     }
 
-    protected BasicConnectionHttpClient(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    protected BasicConnectionHttpClientImpl(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         super(getBasicHttpClientConnectionManager(isNew), isShared);
     }
 
     private static BasicHttpClientConnectionManager getBasicHttpClientConnectionManager(boolean isNew) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
         if (isNew || basicHttpConnectionManager == null || basicHttpConnectionManager.isClosed()) {
             // To make thread safe
-            synchronized (BasicConnectionHttpClient.class) {
+            synchronized (BasicConnectionHttpClientImpl.class) {
                 // Check again as multiple threads can reach above step
                 if (isNew || basicHttpConnectionManager == null || basicHttpConnectionManager.isClosed()) {
                     final TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;

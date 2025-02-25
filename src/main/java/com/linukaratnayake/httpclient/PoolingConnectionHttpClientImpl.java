@@ -18,21 +18,21 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
-public class PoolingConnectionHttpClient extends HttpClient {
+public class PoolingConnectionHttpClientImpl extends HttpClientImpl {
     private static PoolingHttpClientConnectionManager poolingHttpClientConnectionManager;
 
-    protected PoolingConnectionHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    protected PoolingConnectionHttpClientImpl() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         super(getPoolingHttpClientConnectionManager(false), false);   // isShared = false is the default
     }
 
-    protected PoolingConnectionHttpClient(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    protected PoolingConnectionHttpClientImpl(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         super(getPoolingHttpClientConnectionManager(isNew), isShared);
     }
 
     private static PoolingHttpClientConnectionManager getPoolingHttpClientConnectionManager(boolean isNew) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
         if (isNew || poolingHttpClientConnectionManager == null || poolingHttpClientConnectionManager.isClosed()) {
             // To make thread safe
-            synchronized (PoolingConnectionHttpClient.class) {
+            synchronized (PoolingConnectionHttpClientImpl.class) {
                 // Check again as multiple threads can reach above step
                 if (isNew || poolingHttpClientConnectionManager == null || poolingHttpClientConnectionManager.isClosed()) {
                     // Create a custom SSL context to trust all certificates (including self-signed)
