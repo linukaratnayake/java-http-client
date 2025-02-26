@@ -1,7 +1,5 @@
 package com.linukaratnayake.httpclient;
 
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
@@ -18,30 +16,27 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 public class BasicConnectionHttpClientImpl extends HttpClientImpl {
-    private static BasicHttpClientConnectionManager basicHttpConnectionManager = null;
+    private static BasicHttpClientConnectionManager basicHttpConnectionManager;
 
-    protected BasicConnectionHttpClientImpl()
-            throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-
-        super(getBasicHttpClientConnectionManager(false), false);   // isShared = false is the default
+    public BasicConnectionHttpClientImpl() {
+        super(getBasicHttpClientConnectionManager());
     }
 
-    protected BasicConnectionHttpClientImpl(boolean isNew, boolean isShared)
-            throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-
-        super(getBasicHttpClientConnectionManager(isNew), isShared);
-    }
-
-    private static BasicHttpClientConnectionManager getBasicHttpClientConnectionManager(boolean isNew) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
-        if (isNew || basicHttpConnectionManager == null || basicHttpConnectionManager.isClosed()) {
+    private static BasicHttpClientConnectionManager getBasicHttpClientConnectionManager() {
+        if (basicHttpConnectionManager == null || basicHttpConnectionManager.isClosed()) {
             // To make thread safe
             synchronized (BasicConnectionHttpClientImpl.class) {
                 // Check again as multiple threads can reach above step
-                if (isNew || basicHttpConnectionManager == null || basicHttpConnectionManager.isClosed()) {
+                if (basicHttpConnectionManager == null || basicHttpConnectionManager.isClosed()) {
                     final TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
-                    final SSLContext sslContext = SSLContexts.custom()
-                            .loadTrustMaterial(null, acceptingTrustStrategy)
-                            .build();
+                    final SSLContext sslContext;
+                    try {
+                        sslContext = SSLContexts.custom()
+                                .loadTrustMaterial(null, acceptingTrustStrategy)
+                                .build();
+                    } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+                        throw new RuntimeException(e);
+                    }
                     final SSLConnectionSocketFactory sslsf =
                             new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
                     final Registry<ConnectionSocketFactory> socketFactoryRegistry =
@@ -55,10 +50,5 @@ public class BasicConnectionHttpClientImpl extends HttpClientImpl {
             }
         }
         return basicHttpConnectionManager;
-    }
-
-    @Override
-    public CloseableHttpClient getClient() {
-        return HttpClients.createDefault();
     }
 }

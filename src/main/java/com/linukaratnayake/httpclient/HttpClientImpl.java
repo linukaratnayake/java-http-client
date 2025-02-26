@@ -15,17 +15,15 @@ import java.io.InputStream;
 public abstract class HttpClientImpl implements HttpClient, CloseableHttpClientFactory {
 
     private static HttpClientConnectionManager connectionManager;
-    private boolean isShared = false;
 
     protected HttpClientImpl(HttpClientConnectionManager connectionManager) {
-//        this.connectionManager = getConnectionManager();
+        HttpClientImpl.connectionManager = connectionManager;
     }
 
     private CloseableHttpClient getClient() {
-//        this.connectionManager = connectionManager;
         return HttpClients.custom()
                 .setConnectionManager(connectionManager)
-                .setConnectionManagerShared(isShared)
+                .setConnectionManagerShared(true)
                 .build();
     }
 
@@ -52,9 +50,10 @@ public abstract class HttpClientImpl implements HttpClient, CloseableHttpClientF
         }
     }
 
+    @Override
     public void closeConnectionManager() {
         try {
-            this.connectionManager.close();
+            connectionManager.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
