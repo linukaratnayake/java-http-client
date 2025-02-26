@@ -19,13 +19,41 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 public class PoolingConnectionHttpClientImpl extends HttpClientImpl {
-    private static final int MAX_TOTAL_CONNECTIONS = 100;
-    private static final int MAX_CONNECTIONS_PER_ROUTE = 5;
+    private static int MAX_TOTAL_CONNECTIONS = 100;
+    private static int MAX_CONNECTIONS_PER_ROUTE = 5;
+
+    private static int SOCKET_TIMEOUT_MINUTES = 1;
+    private static int CONNECT_TIMEOUT_MINUTES = 1;
+    private static int TIME_TO_LIVE_MINUTES = 10;
 
     private static PoolingHttpClientConnectionManager poolingHttpClientConnectionManager;
 
     public PoolingConnectionHttpClientImpl() {
         super(getConnectionManager());
+    }
+
+    public PoolingConnectionHttpClientImpl(
+            int maxTotalConnections,
+            int maxConnectionsPerRoute,
+            int socketTimeoutMinutes,
+            int connectTimeoutMinutes,
+            int timeToLiveMinutes
+    ) {
+        super(getConnectionManager());
+
+        MAX_TOTAL_CONNECTIONS = maxTotalConnections;
+        MAX_CONNECTIONS_PER_ROUTE = maxConnectionsPerRoute;
+        SOCKET_TIMEOUT_MINUTES = socketTimeoutMinutes;
+        CONNECT_TIMEOUT_MINUTES = connectTimeoutMinutes;
+        TIME_TO_LIVE_MINUTES = timeToLiveMinutes;
+
+        poolingHttpClientConnectionManager.setDefaultMaxPerRoute(maxConnectionsPerRoute);
+        poolingHttpClientConnectionManager.setMaxTotal(maxTotalConnections);
+        poolingHttpClientConnectionManager.setDefaultConnectionConfig(ConnectionConfig.custom()
+                .setSocketTimeout(Timeout.ofMinutes(socketTimeoutMinutes))
+                .setConnectTimeout(Timeout.ofMinutes(connectTimeoutMinutes))
+                .setTimeToLive(TimeValue.ofMinutes(timeToLiveMinutes))
+                .build());
     }
 
     private static PoolingHttpClientConnectionManager getConnectionManager() {
@@ -59,9 +87,9 @@ public class PoolingConnectionHttpClientImpl extends HttpClientImpl {
                                 .setPoolConcurrencyPolicy(PoolConcurrencyPolicy.STRICT)
                                 .setConnPoolPolicy(PoolReusePolicy.LIFO)
                                 .setDefaultConnectionConfig(ConnectionConfig.custom()
-                                        .setSocketTimeout(Timeout.ofMinutes(1))
-                                        .setConnectTimeout(Timeout.ofMinutes(1))
-                                        .setTimeToLive(TimeValue.ofMinutes(10))
+                                        .setSocketTimeout(Timeout.ofMinutes(SOCKET_TIMEOUT_MINUTES))
+                                        .setConnectTimeout(Timeout.ofMinutes(CONNECT_TIMEOUT_MINUTES))
+                                        .setTimeToLive(TimeValue.ofMinutes(TIME_TO_LIVE_MINUTES))
                                         .build())
                                 .setMaxConnPerRoute(MAX_CONNECTIONS_PER_ROUTE)
                                 .setMaxConnTotal(MAX_TOTAL_CONNECTIONS)
