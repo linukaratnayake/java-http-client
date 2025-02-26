@@ -3,6 +3,7 @@ package com.linukaratnayake.httpclient;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
 import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
 import org.apache.hc.core5.http.io.SocketConfig;
@@ -19,17 +20,19 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 public class PoolingConnectionHttpClientImpl extends HttpClientImpl {
+    private static final int MAX_TOTAL_CONNECTIONS = 100;
     private static PoolingHttpClientConnectionManager poolingHttpClientConnectionManager;
 
     protected PoolingConnectionHttpClientImpl() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        super(getPoolingHttpClientConnectionManager(false), false);   // isShared = false is the default
+        super(getConnectionManager(), false);   // isShared = false is the default
     }
 
     protected PoolingConnectionHttpClientImpl(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        super(getPoolingHttpClientConnectionManager(isNew), isShared);
+        super(getConnectionManager(), isShared);
     }
 
-    private static PoolingHttpClientConnectionManager getPoolingHttpClientConnectionManager(boolean isNew) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
+    public static HttpClientConnectionManager getConnectionManager() {
+
         if (isNew || poolingHttpClientConnectionManager == null || poolingHttpClientConnectionManager.isClosed()) {
             // To make thread safe
             synchronized (PoolingConnectionHttpClientImpl.class) {

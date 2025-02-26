@@ -1,5 +1,7 @@
 package com.linukaratnayake.httpclient;
 
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
@@ -18,11 +20,15 @@ import java.security.NoSuchAlgorithmException;
 public class BasicConnectionHttpClientImpl extends HttpClientImpl {
     private static BasicHttpClientConnectionManager basicHttpConnectionManager = null;
 
-    protected BasicConnectionHttpClientImpl() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    protected BasicConnectionHttpClientImpl()
+            throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+
         super(getBasicHttpClientConnectionManager(false), false);   // isShared = false is the default
     }
 
-    protected BasicConnectionHttpClientImpl(boolean isNew, boolean isShared) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    protected BasicConnectionHttpClientImpl(boolean isNew, boolean isShared)
+            throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+
         super(getBasicHttpClientConnectionManager(isNew), isShared);
     }
 
@@ -49,5 +55,10 @@ public class BasicConnectionHttpClientImpl extends HttpClientImpl {
             }
         }
         return basicHttpConnectionManager;
+    }
+
+    @Override
+    public CloseableHttpClient getClient() {
+        return HttpClients.createDefault();
     }
 }
